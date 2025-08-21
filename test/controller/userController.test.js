@@ -21,16 +21,37 @@ describe("User Controller", () => {
   // Testes do POST /register
   // ------------------------------
   describe("POST /register", () => {
-    it("Quando registro um novo usuário com sucesso devo receber um status 201", async () => {
+    it("Quando registro um novo usuário com sucesso devo receber status 201", async () => {
       const resposta = await request(app)
         .post("/register")
         .send({ username: "Andre", password: "123toquinho" });
 
       expect(resposta.status).to.equal(201);
-      expect(resposta.body).to.have.property(
-        "message",
-        "User registered successfully."
-      );
+      expect(resposta.body).to.have.property("message", "User registered successfully.");
+    });
+
+    it("Mock: Quando tento registrar um usuário sem informar a senha devo receber status 400", async () => {
+      const userRegisterMock = sinon.stub(userService, "addUser");
+      userRegisterMock.returns(null);
+
+      const resposta = await request(app)
+        .post("/register")
+        .send({ username: "Andre", password: "" });
+
+      expect(resposta.status).to.equal(400);
+      expect(resposta.body).to.have.property("message", "Username and password required.");
+    });
+
+    it("Mock: Quando tento registrar um usuário que já existe devo receber status 409", async () => {
+      const userRegisterMock = sinon.stub(userService, "addUser");
+      userRegisterMock.returns(null);
+
+      const resposta = await request(app)
+        .post("/register")
+        .send({ username: "Andre", password: "test" });
+
+      expect(resposta.status).to.equal(409);
+      expect(resposta.body).to.have.property("message", "User already exists.");
     });
   });
 
